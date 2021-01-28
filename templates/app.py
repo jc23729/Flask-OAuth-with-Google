@@ -10,3 +10,23 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 
 blueprint = make_google_blueprint(client_id='', client_secret='', offline=True, scope= ['profile', 'email'])
+
+app.register_blueprint(blueprint, url_prefix='/login')
+
+@app.route('/')
+def index():
+  return render_template('home.html')
+
+@app.route('/welcome')
+def welcome():
+  return render_template('welcome.html')
+
+@app.route('/login/google')
+def login():
+  if not google.authorized:
+    return render_template(url_for('google.login'))
+  resp = google.get('/oauth2/v2/userinfo')
+  assert resp.ok, resp.text
+  email = resp.json()['email']
+
+  return render_template('welcome.html', email=email)
